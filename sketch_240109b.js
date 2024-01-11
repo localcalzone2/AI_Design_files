@@ -1,9 +1,10 @@
 let cols, rows;
 const cellSize = 10;
 let grid, nextGrid, ageGrid;
+let currentPattern = 'single';
 
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(1200, 600);
   cols = width / cellSize;
   rows = height / cellSize;
 
@@ -16,6 +17,9 @@ function setup() {
       grid[i][j] = floor(random(2));
     }
   }
+  select('#pattern1').mousePressed(() => currentPattern = 'single');
+  select('#pattern2').mousePressed(() => currentPattern = '2x2');
+  select('#pattern3').mousePressed(() => currentPattern = '6x6');
 }
 
 function draw() {
@@ -80,9 +84,50 @@ function draw() {
     }
   }
 
-  filter(BLUR, 1); // Apply a blur effect to the canvas
+  filter(BLUR, 0); // Apply a blur effect to the canvas
   [grid, nextGrid] = [nextGrid, grid]; // Swap grids for the next iteration
 }
+
+function activateCellAt(gridX, gridY) {
+  if (gridX >= 0 && gridX < cols && gridY >= 0 && gridY < rows) {
+    grid[gridX][gridY] = 1; // Set the cell to alive
+    ageGrid[gridX][gridY] = 0; // Reset the age of the cell
+  }
+}
+
+function activatePatternAt(gridX, gridY) {
+  if (currentPattern === 'single') {
+    activateCellAt(gridX, gridY);
+  } else if (currentPattern === '2x2') {
+    for (let dx = 0; dx < 2; dx++) {
+      for (let dy = 0; dy < 2; dy++) {
+        activateCellAt(gridX + dx, gridY + dy);
+      }
+    }
+  } else if (currentPattern === '6x6') {
+    for (let dx = 0; dx < 6; dx++) {
+      for (let dy = 0; dy < 6; dy++) {
+        activateCellAt(gridX + dx, gridY + dy);
+      }
+    }
+  }
+}
+
+// Use activatePatternAt in mousePressed and mouseDragged
+function mousePressed() {
+  console.log("Mouse pressed");
+  let gridX = floor(mouseX / cellSize);
+  let gridY = floor(mouseY / cellSize);
+  activatePatternAt(gridX, gridY);
+}
+
+function mouseDragged() {
+  console.log("Mouse dragged");
+  let gridX = floor(mouseX / cellSize);
+  let gridY = floor(mouseY / cellSize);
+  activatePatternAt(gridX, gridY);
+}
+
 
 function countNeighbors(grid, x, y) {
   let sum = 0;
